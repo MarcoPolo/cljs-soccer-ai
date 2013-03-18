@@ -71,7 +71,10 @@
           (in-goal2? x y))
       (do 
         (pause-for-nsecs 5)
-        (reset)))))
+        (reset)
+        (reset)
+        (reset)
+        ))))
 
 
 ;; Place the teams
@@ -126,7 +129,6 @@
       2)))
 
 
-
 (defn chase-ball [player ball]
   (core/move-item-to player 
                      (find-along-path (:x @player) (:x @ball) 10)
@@ -135,36 +137,6 @@
   (if (and (= (:x @player) (:x @ball)) (= (:y @player) (:y @ball)))
       (player-kick-ball player ball)))
     
-
-(def red-team-chasing (atom true))
-(def blue-team-chasing (atom true))
-(comment
-  (:x @(first team1))
-  (find-along-path 100 180 10 )
-  (def x (atom true))
-  (chase-ball (first team1) ball x)
-  (reset! x false)
-  (reset! red-team-chasing false)
-  @x
-  x
-
-  red-team-chasing
-  (player-kick-ball (first team1) ball)
-  (play-naive-ball team1 ball)
-  (play-naive-ball team2 ball)
-  (find-closest-player team1 ball) 
-
-  (swap! stuff-to-run conj #(play-naive-ball team1 ball))
-  (play-naive-ball team2 ball)
-
-
-  (js/clearTimeout @x)
-  (js/clearTimeout @red-team-chasing)
-  (js/clearTimeout @blue-team-chasing)
-  )
-
-;; Keep track of goals! todo
-
 ;; Some functions to know who is the closest
 (defn find-closest-player [players ball]
   (apply min-key #(distance-btwn-items (deref %) @ball) players))
@@ -181,28 +153,23 @@
 ;; The blue team has a manger task assignment to survey the situation and move accordingly
  
 
+;; Figure out the closest players
 (defn sort-closest-players [players ball]
   (sort #( < (distance-btwn-items (deref %1) @ball) (distance-btwn-items (deref %2) @ball)) players))
 
+;; get the couple of closest-players
 (defn get-closest-two-players [players ball]
   (take 2 (sort-closest-players players ball)))
 
+;; Get the rest, these guys will be defence
 (defn get-farthest-players [players ball]
   (drop 2 (sort-closest-players players ball)))
 
-;; careful here since the binding atom is given twice
+
 (defn group-chase-ball [players ball]
   (let [players (get-closest-two-players players ball)]
     (doseq [player players]
       (chase-ball player ball))))
-
-(defn call-fn-until-false [func continue-atom? interval]
-  (println "inside fn")
-  (if @continue-atom?
-    (do 
-      (js/setTimeout #(call-fn-until-false func continue-atom? interval) interval)
-      (func))))
-
 
 (defn protect-goal [player ball goal]
   (let [goal (zipmap [:x :y] goal)]
@@ -247,70 +214,39 @@
 
 (comment
 
-  (reset)
+  ;; Have one person chase the ball
+  (chase-ball (first team2) ball)
+  (play-naive-ball team1 ball)
 
-(call-fn-until-false
-#(
-   group-chase-ball
-  team2
-  ball
-  continue-chase-ball?)
-  continue-chase-ball?
-  4e3
-  )
- (defn crap []
-    (#( println "hi")))
-
-  (start-game)
-  (pause-game)
-
-
-  stuff-to-run
-  (game-loop)
+  ;; What does this look like
   (group-chase-ball team2 ball)
 
+  )
 
-  score-team2
+(comment
 
- (if @continue-chase-ball?
-   (do 
-     (.call crap nil)
-     (js/setTimeout #(.call crap nil) 1e3)
-   ))
-  (get-closest-two-players team2 ball)
-  (get-farthest-players team2 ball)
+  (reset)
+  (pause-game)
+  (start-game)
 
-  (def continue-goal-protect? (atom true))
-  (protect-goal-with-players 
-    (get-farthest-players team2 ball)
-    ball
-    red-team-goal
-    continue-goal-protect?)
+  (reset! stuff-to-run [])
+  (swap! stuff-to-run conj #(check-goal ball score-team1 score-team2))
 
-  (+ 1 2)
 
-  (def continue-chase-ball? (atom true))
+  ;; Two naive players
+  (swap! stuff-to-run conj #(play-naive-ball team1 ball))
+  (swap! stuff-to-run conj #(play-naive-ball team2 ball))
 
-  (#(
-     group-chase-ball
-    team2
-    ball
-    continue-chase-ball?)
+  ;; one managed player
+  (swap! stuff-to-run conj #(play-naive-ball team1 ball))
+  (swap! stuff-to-run conj #(group-chase-ball team2 ball))
+  (swap! stuff-to-run conj #(protect-goal-with-players team2 ball red-team-goal))
 
-    continue-chase-ball?
-
-    1e3)
-  (chase-ball
-    (first (get-closest-two-players team2 ball))
-    ball
-    continue-chase-ball?)
-  (chase-ball (ffirst k) ball continue-chase-ball?)
-    
-  (call-fn-until-false #(println "HI") continue-chase-ball? 1e3)
-  continue-chase-ball?
-  (reset! continue-chase-ball? false)
-  (reset! continue-chase-ball? true)
-
+  ;; both managed
+  (swap! stuff-to-run conj #(group-chase-ball team1 ball))
+  (swap! stuff-to-run conj #(protect-goal-with-players team1 ball red-team-goal))
+  (swap! stuff-to-run conj #(group-chase-ball team2 ball))
+  (swap! stuff-to-run conj #(protect-goal-with-players team2 ball red-team-goal))
 
 
 

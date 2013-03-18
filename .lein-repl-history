@@ -1,2 +1,12 @@
 (or "dfasd" :dev)
 (or nil :dev)
+(defn hello []
+  (println "hello"))
+(map #( hello ) (range 10))
+(map #( (do (hello) %) ) (range 10))
+(map #( do (hello) % ) (range 10))
+(defn other []
+  (map #( do (hello) % ) (range 10))
+  "bye")
+(other
+)
