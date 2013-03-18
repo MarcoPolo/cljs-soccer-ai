@@ -4,6 +4,17 @@ a {text-decoration:none; color: #b2b2b2; }
 #wrapper { margin:auto; width: 1024px; }
 
 #canvasContainer { margin:auto; width:800px; }
-#demoCanvas { margin:auto; }
+#demoCanvas { margin:auto; border:solid; }
+.score{
+  font-size: 120px;
+  position: absolute;
+}
+
+#score-team2{
+  right: 100px;
+}
+#score-team1{
+  left: 100px;
+}
 
 .alert { border-radius:10px; background: #3f634d; border: 2px solid #3c8455; padding: 15px; }

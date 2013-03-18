@@ -12,8 +12,10 @@
               [:body
                [:div#wrapper
                 content]
+               [:div#score-team1.score 0]
+               [:div#score-team2.score 0]
                [:div#canvasContainer
-                 [:canvas#demoCanvas {:width "800px" :height "600px"}]]
+                 [:canvas#demoCanvas {:width "800px" :height "400px"}]]
                (include-js 
                  "http://code.createjs.com/createjs-2013.02.12.min.js")
                (cljs/include-scripts :with-jquery)]))
